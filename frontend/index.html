@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#2f7bff">
+  <meta name="description" content="Finvia — SME cash-flow forecasting, tax incentive signals and financing referrals.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Finvia — SME Finance</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <header class="app-header">
+      <div class="brand"><img src="/icon-512.png" alt="Finvia"><div><strong>Finvia</strong><span>SME Finance</span></div></div>
+      <button class="header-icon" id="bellBtn" aria-label="Notifications"><span class="bell" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><i id="notifDot"></i></button>
+    </header>
+
+    <main>
+      <section class="screen active" data-screen="home">
+        <div class="greeting"><div><p class="eyebrow" id="todayLabel">FINVIA</p><h1 id="greeting">Good morning</h1><p>Here is where your cash is heading.</p></div><button class="avatar" id="profileBtn">SME</button></div>
+
+        <section class="cash-card">
+          <div class="cash-card-top"><span>Available cash</span><button id="refreshBtn" class="mini-icon" aria-label="Refresh">↻</button></div>
+          <strong id="cashValue">RM 48,600</strong>
+          <div class="cash-status"><span class="status-dot"></span><span id="cashStatus">Healthy today</span><span class="divider">•</span><span>30-day view</span></div>
+          <div class="mini-chart" id="miniChart" aria-label="30-day cash forecast"></div>
+        </section>
+
+        <button class="attention-card" id="attentionBtn">
+          <span class="attention-icon">!</span><span class="attention-copy"><b id="attentionTitle">Potential cash gap ahead</b><small id="attentionText">Finvia sees a low-cash window before expected customer payments.</small></span><span class="chevron">›</span>
+        </button>
+
+        <div class="section-head"><h2>Quick actions</h2><button class="text-btn" id="seeAllBtn">See all</button></div>
+        <div class="quick-grid">
+          <button class="quick-card" data-action="upload"><span class="quick-icon blue">＋</span><b>Upload</b><small>Statement or receipt</small></button>
+          <button class="quick-card" data-action="forecast"><span class="quick-icon purple">↗</span><b>Cash flow</b><small>7–30 day outlook</small></button>
+          <button class="quick-card" data-action="tax"><span class="quick-icon pink">✓</span><b>Tax signals</b><small>Review opportunities</small></button>
+          <button class="quick-card" data-action="finance"><span class="quick-icon navy">$</span><b>Financing</b><small>Explore referral</small></button>
+        </div>
+
+        <div class="section-head"><h2>Recent activity</h2><button class="text-btn" data-nav="documents">View all</button></div>
+        <div class="activity-list" id="homeActivity"></div>
+      </section>
+
+      <section class="screen" data-screen="cashflow">
+        <div class="page-title"><p class="eyebrow">CASH FLOW</p><h1>Your cash outlook</h1><p>See when money may come in, go out and where a gap could appear.</p></div>
+        <div class="segmented"><button class="active" data-days="7">7 days</button><button data-days="14">14 days</button><button data-days="30">30 days</button></div>
+        <section class="white-card"><div class="card-title"><div><span class="muted">Projected lowest balance</span><strong id="lowBalance">RM 11,150</strong></div><span class="pill warn" id="lowPill">Watch</span></div><div class="large-chart" id="largeChart"></div><p class="chart-note" id="forecastNote">Estimated from the current workspace transaction history.</p></section>
+        <div class="metric-grid"><div class="metric"><span>Expected inflow</span><b id="inflowMetric">RM 31,800</b></div><div class="metric"><span>Expected outflow</span><b id="outflowMetric">RM 37,450</b></div><div class="metric"><span>Cash buffer</span><b>RM 15,000</b></div></div>
+        <section class="white-card"><div class="card-title"><h2>Upcoming</h2><span class="muted">Next 30 days</span></div><div class="event-list" id="eventList"></div></section>
+        <section class="finance-banner" id="financeBanner"><div><span class="eyebrow">FINANCING WINDOW</span><h2>Plan before the gap arrives.</h2><p>If your projected cash falls below the buffer, you can choose to request a referral to a participating bank. The bank makes the final decision.</p></div><button class="primary" data-action="finance">Review options</button></section>
+      </section>
+
+      <section class="screen" data-screen="documents">
+        <div class="page-title"><p class="eyebrow">DOCUMENTS</p><h1>Your finance folder</h1><p>Keep statements, invoices and receipts together for review.</p></div>
+        <button class="upload-hero" data-action="upload"><span class="upload-symbol">↑</span><div><b>Upload a document</b><small>CSV, XLSX, PDF, JPG or PNG</small></div><span>›</span></button>
+        <div class="filter-row"><button class="filter active" data-filter="all">All</button><button class="filter" data-filter="statement">Statements</button><button class="filter" data-filter="invoice">Invoices</button><button class="filter" data-filter="receipt">Receipts</button></div>
+        <div class="document-list" id="documentList"></div>
+      </section>
+
+      <section class="screen" data-screen="tax">
+        <div class="page-title"><p class="eyebrow">TAX CENTRE</p><h1>Tax incentive signals</h1><p>Finvia highlights expenses that may be relevant. It does not confirm eligibility.</p></div>
+        <div class="tax-summary"><div><span>Signals</span><b id="signalCount">2</b></div><div><span>Documents ready</span><b id="docCount">2</b></div><div><span>Report</span><b>Available</b></div></div>
+        <div class="signal-list" id="signalList"></div>
+        <button class="white-card report-button" id="reportBtn"><span class="report-icon">▤</span><div><b>Annual Tax-Incentive Report</b><small>Review signals, supporting documents and next steps.</small></div><span>›</span></button>
+        <div class="disclaimer"><b>Important</b><p>Signals are indicative only. Final eligibility and claims depend on current Malaysian tax rules and the relevant authority.</p></div>
+      </section>
+
+      <section class="screen" data-screen="finance">
+        <div class="page-title"><p class="eyebrow">FINANCING</p><h1>Financing opportunity</h1><p>Finvia can prepare a referral when your forecast shows a potential cash shortfall.</p></div>
+        <section class="finance-card"><span class="eyebrow">PROJECTED GAP</span><strong id="gapValue">RM 3,850</strong><div class="gap-row"><span>Lowest point</span><b id="gapDay">Day 19</b></div><div class="gap-row"><span>Estimated buffer</span><b>RM 15,000</b></div></section>
+        <section class="white-card"><h2>How it works</h2><ol class="steps"><li><span>1</span><div><b>Review the forecast</b><small>Finvia shows the projected gap and timing.</small></div></li><li><span>2</span><div><b>Give consent</b><small>You choose whether to request a referral.</small></div></li><li><span>3</span><div><b>Partner bank reviews</b><small>The bank independently approves or declines financing.</small></div></li></ol></section>
+        <section class="consent-card"><label class="check"><input type="checkbox" id="consent"><span></span><p>I consent to Finvia submitting a financing referral request to a participating bank.</p></label><button class="primary full" id="referralBtn">Request referral</button><p class="fineprint">Finvia does not approve loans or guarantee financing.</p></section>
+      </section>
+
+      <section class="screen" data-screen="more">
+        <div class="page-title"><p class="eyebrow">MORE</p><h1>Finvia settings</h1><p>Manage your workspace and app preferences.</p></div>
+        <div class="settings-list"><button><span>Business profile</span><b>SME workspace ›</b></button><button><span>Notifications</span><b>On ›</b></button><button id="installBtn"><span>Install Finvia</span><b>Add to home screen ›</b></button><button id="aboutBtn"><span>About Finvia</span><b>Prototype ›</b></button></div>
+        <div class="brand-note"><img src="/icon-512.png" alt="Finvia icon"><div><b>Finvia</b><small>Your cash, seen 30 days ahead.</small></div></div>
+      </section>
+    </main>
+
+    <button class="fab" id="fab" aria-label="Create or upload"><span>＋</span></button>
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item active" data-nav="home">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 10.8 12 3.5l8.5 7.3v9.2a1 1 0 0 1-1 1h-5v-5.5h-5V21h-5a1 1 0 0 1-1-1z"/></svg></span><small>Home</small>
+      </button>
+      <button class="nav-item" data-nav="cashflow">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V9M9.3 18v-5M14.7 18V6M20 18v-9"/></svg></span><small>Cash flow</small>
+      </button>
+      <button class="nav-spacer" aria-hidden="true"></button>
+      <button class="nav-item" data-nav="documents">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h7.5L19 8v12.5H7zM14 3.5V8h5M10 12h6M10 15.5h6"/></svg></span><small>Docs</small>
+      </button>
+      <button class="nav-item" data-nav="tax">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><small>Tax</small>
+      </button>
+    </nav>
+  </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <section class="sheet" id="uploadSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="uploadSheet">×</button><p class="eyebrow">NEW DOCUMENT</p><h2>What do you want to upload?</h2><p class="muted">Finvia will store the document and analyse supported transaction files.</p><label class="dropzone" for="fileInput"><span class="drop-icon">↑</span><b id="fileLabel">Choose a file</b><small>CSV, XLSX, PDF, JPG or PNG · max 10 MB</small></label><input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png" hidden><div class="selected" id="selectedFile">No file selected</div><button class="primary full" id="uploadSubmit">Analyse with Finvia</button><p class="upload-message" id="uploadMessage"></p></section>
+  <section class="sheet" id="reportSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="reportSheet">×</button><p class="eyebrow">REPORT</p><h2>Annual Tax-Incentive Report</h2><p class="muted">Indicative signals from the current workspace.</p><div id="reportBody" class="report-body"></div><button class="secondary full" data-close="reportSheet">Close</button></section>
+  <section class="sheet" id="notifySheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="notifySheet">×</button><p class="eyebrow">NOTIFICATIONS</p><h2>What needs your attention</h2><div class="notification-item"><span class="attention-icon">!</span><div><b>Potential cash gap</b><small id="notifGapText">Your projected balance may fall below the buffer around day 19.</small></div></div><div class="notification-item"><span class="quick-icon pink">✓</span><div><b>Tax incentive signal</b><small>Software subscriptions may be relevant to a digital expense incentive.</small></div></div></section>
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

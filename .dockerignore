@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+.venv-*
+__pycache__
+*.pyc
+.pytest_cache
+uploads/*
+!uploads/.gitkeep
+.env
+.env.*
+.DS_Store
+docs
+*.md
+backend/tests
+backend/requirements-dev.txt

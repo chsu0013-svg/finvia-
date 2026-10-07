@@ -1,0 +1,118 @@
+name: Test, build and deploy Finvia (ECS Express Mode)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: finvia-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test backend and build image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Run tests
+        working-directory: backend
+        run: python -m pytest -q
+
+      - name: Build Docker image (no push)
+        run: docker build -t finvia:ci .
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name finvia-ci -p 8080:8080 finvia:ci
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/health && exit 0
+            sleep 2
+          done
+          docker logs finvia-ci
+          exit 1
+
+  deploy:
+    name: Build, publish and deploy to AWS
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+      ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+
+    steps:
+      - name: Check required repository variables
+        run: |
+          missing=0
+          for v in AWS_REGION AWS_ACCOUNT_ID ECR_REPOSITORY ECS_SERVICE ECS_CLUSTER; do
+            if [ -z "${!v}" ]; then echo "::error::GitHub variable $v is not set (Settings > Secrets and variables > Actions > Variables)"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions-ecs-role
+          role-session-name: GitHubActionsFinviaDeployment
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy to ECS Express Mode
+        id: deploy
+        uses: aws-actions/amazon-ecs-deploy-express-service@v1
+        with:
+          service-name: ${{ env.ECS_SERVICE }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          execution-role-arn: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole
+          infrastructure-role-arn: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/ecsInfrastructureRoleForExpressServices
+          cluster: ${{ env.ECS_CLUSTER }}
+          container-port: 8080
+          health-check-path: /health
+          # Workspace data is held in memory per container, so run exactly one task.
+          min-task-count: 1
+          max-task-count: 1
+          cpu: '512'
+          memory: '1024'
+
+      - name: Show live URL
+        run: echo "Finvia is live at ${{ steps.deploy.outputs.endpoint }}"
