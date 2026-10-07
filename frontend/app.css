@@ -40,3 +40,126 @@ main{display:block}.screen{display:none;animation:screenIn .32s ease}.screen.act
 .signal-list + .report-button{margin-top:13px}
 .report-button:hover{background:#fff}
 @media(max-width:699px){.large-chart{height:270px}.report-button{min-height:78px}}
+
+/* ===== v1.3: cash outlook, available cash, laptop layout ===== */
+.pos{color:var(--green)}.neg{color:var(--warn)}
+.upload-message.error{color:var(--warn)}.upload-message.ok{color:var(--green)}
+.upload-message{font-size:.72rem;line-height:1.45}
+.empty{font-size:.7rem;color:var(--muted);line-height:1.5;padding:6px 2px}
+
+/* Home */
+.home-grid{display:grid;gap:0}
+.cash-card{cursor:pointer;transition:transform .15s ease,box-shadow .2s ease}
+.cash-card:hover{box-shadow:0 26px 50px rgba(33,36,160,.28)}
+.cash-card:focus-visible{outline:3px solid rgba(47,123,255,.5);outline-offset:3px}
+.cash-more{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.16);font-size:.68rem;color:#dbe5ff;position:relative;z-index:1}
+.cash-more span:last-child{font-size:1.2rem;line-height:1}
+.mini-chart{height:88px}
+
+/* Cash outlook */
+.cf-grid{display:grid;gap:0}
+.cf-card{padding:18px}
+.cf-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.cf-hero .muted{display:block;font-size:.7rem;color:var(--muted)}
+.cf-hero strong{display:block;font-size:2rem;letter-spacing:-.045em;color:var(--ink);margin-top:2px;line-height:1.15}
+.cf-delta{display:block;font-size:.72rem;font-weight:600;margin-top:2px}
+.pill{font-size:.66rem;padding:6px 11px}
+.large-chart{position:relative;height:auto!important;min-height:0;overflow:visible;background:transparent;border-radius:0;touch-action:pan-y}
+.large-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.large-chart .g{stroke:#e3ecf8;stroke-width:1}
+.large-chart .yl,.large-chart .xl,.large-chart .bl,.large-chart .lowm text{font-family:Poppins,system-ui,sans-serif;font-size:11px;fill:var(--muted)}
+.large-chart .bl{fill:#a45ac8;font-weight:600}
+.large-chart .lowm text{fill:var(--navy);font-weight:600}
+.large-chart .band{fill:rgba(47,123,255,.1);stroke:none}
+.large-chart .area{fill:url(#gArea);stroke:none}
+.large-chart .ln{fill:none;stroke:var(--blue);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.large-chart .buf{stroke:#c58be8;stroke-width:1.6;stroke-dasharray:6 5}
+.large-chart .ev{stroke:#fff;stroke-width:2}
+.large-chart .ev.in{fill:var(--green)}.large-chart .ev.out{fill:var(--warn)}
+.large-chart .lowm circle{fill:var(--navy);stroke:#fff;stroke-width:2.5}
+.large-chart .cl{stroke:var(--ink);stroke-width:1;opacity:.35}
+.large-chart .cd{fill:var(--ink);stroke:#fff;stroke-width:2.5}
+.large-chart .hit{cursor:crosshair}
+.tip{position:absolute;display:none;pointer-events:none;background:var(--navy);color:#fff;border-radius:12px;padding:8px 11px;font-size:.7rem;line-height:1.4;box-shadow:0 10px 26px rgba(2,27,58,.28);white-space:nowrap;z-index:3}
+.tip b,.tip span{display:block}.tip b{font-size:.62rem;color:#a9cbf7;font-weight:600}.tip span{font-size:.9rem;font-weight:700}
+.tip small{display:block;font-size:.62rem;margin-top:2px;color:#cfe0ff}.tip small.in{color:#7ee8c4}.tip small.out{color:#ffb3a1}
+.chart-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 2px 0;font-size:.62rem;color:var(--muted)}
+.chart-legend span{display:inline-flex;align-items:center;gap:6px}
+.chart-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;background:var(--blue)}
+.chart-legend .lg-band{height:9px;background:rgba(47,123,255,.18)}
+.chart-legend .lg-buf{background:none;border-top:2px dashed #c58be8;height:0}
+.chart-legend .lg-in,.chart-legend .lg-out{width:9px;height:9px;border-radius:50%}
+.chart-legend .lg-in{background:var(--green)}.chart-legend .lg-out{background:var(--warn)}
+.chart-note{font-size:.68rem;line-height:1.55;margin:10px 2px 0}
+.metric-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.metric{padding:13px 14px}
+.metric span{font-size:.64rem}.metric b{font-size:1.02rem;margin-top:5px;letter-spacing:-.02em}
+.metric em{display:block;font-style:normal;font-size:.6rem;color:var(--muted);margin-top:2px}
+.card-title h2{font-size:.95rem}.card-title span{font-size:.66rem}
+.week-bars{display:grid;gap:12px}
+.wk{display:grid;grid-template-columns:1fr auto;grid-template-areas:"l b" "t t" "e e";gap:5px 10px;align-items:center}
+.wk-l{grid-area:l;font-size:.72rem;font-weight:600;color:var(--navy)}
+.wk b{grid-area:b;font-size:.78rem}
+.wk-track{grid-area:t;height:9px;background:#eaf1fb;border-radius:99px;overflow:hidden}
+.wk-track i{display:block;height:100%;border-radius:99px}
+.wk-track i.pos{background:linear-gradient(90deg,#4cc9a0,var(--green))}.wk-track i.neg{background:linear-gradient(90deg,#f19a85,var(--warn))}
+.wk small{grid-area:e;font-size:.62rem;color:var(--muted)}
+.insight-list{display:grid;gap:12px}
+.insight{display:flex;gap:11px;align-items:flex-start}
+.insight i{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none;background:var(--blue)}
+.insight.warn i{background:var(--warn)}.insight.ok i{background:var(--green)}
+.insight b{display:block;font-size:.76rem}.insight small{display:block;font-size:.66rem;color:var(--muted);line-height:1.5;margin-top:2px}
+.event-item{padding:12px 14px}
+.event-item b{font-size:.8rem}.event-item small{font-size:.66rem;line-height:1.45}
+.event-item .date{width:38px;text-align:center;font-size:.58rem;font-weight:700;color:var(--blue);text-transform:uppercase;line-height:1.1}
+.event-item .date b{display:block;font-size:1.05rem;color:var(--ink)}
+.amount{font-size:.78rem}
+.activity-item b{font-size:.8rem}.activity-item small{font-size:.66rem}
+
+/* Available cash sheet */
+.sheet-lg{width:min(720px,calc(100% - 12px));max-height:92vh}
+.cs-top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:4px 0 0}
+.cs-top strong{font-size:2.3rem;letter-spacing:-.05em;color:var(--ink);line-height:1.1}
+.cs-delta{font-size:.78rem;font-weight:600}
+.sheet-lg .muted{font-size:.72rem;margin:2px 0 8px}
+.cs-chart{margin:6px -4px 4px;min-height:120px}.cs-chart svg{display:block;width:100%;height:auto}
+.cs-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:8px 0 4px}
+.cs-stat{background:#f4f8ff;border-radius:16px;padding:12px 14px}
+.cs-stat span{display:block;font-size:.64rem;color:var(--muted)}.cs-stat b{display:block;font-size:1.05rem;color:var(--ink);margin:3px 0 1px;letter-spacing:-.02em}.cs-stat small{font-size:.58rem;color:var(--muted)}
+.cs-h{font-size:.82rem;color:var(--navy);margin:20px 0 10px}
+.cs-flow,.cs-cats{display:grid;gap:11px}
+.fl,.cat{display:grid;grid-template-columns:104px 1fr 92px;gap:10px;align-items:center;font-size:.72rem}
+.fl>div,.cat>div{height:9px;background:#eaf1fb;border-radius:99px;overflow:hidden}
+.fl i,.cat i{display:block;height:100%;border-radius:99px}
+.fl i.pos{background:var(--green)}.fl i.neg{background:var(--warn)}.cat i{background:linear-gradient(90deg,var(--blue),var(--ink))}
+.fl b,.cat b{font-size:.74rem;text-align:right}
+.cs-actions{display:flex;gap:10px;margin-top:22px}.cs-actions .primary,.cs-actions .secondary{flex:1;padding:13px 16px;font-size:.78rem}
+.sheet .secondary{border:1px solid var(--line)}
+.dropzone b,.selected{word-break:break-all}
+
+/* Laptop */
+@media(min-width:1000px){
+  html{font-size:17px}
+  .app{width:min(100%,1180px);padding:0 40px 140px}
+  .app>main{max-width:1060px}
+  .home-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"cash quick" "attn quick" "act act";column-gap:28px}
+  .hg-cash{grid-area:cash}.hg-attn{grid-area:attn}.hg-quick{grid-area:quick}.hg-act{grid-area:act}
+  .hg-quick .section-head{margin-top:0}
+  .hg-act .activity-list{grid-template-columns:repeat(3,1fr)}
+  .mini-chart{height:120px}
+  .cf-grid{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);column-gap:16px;align-items:start}
+  .segmented{max-width:420px}
+  .sheet-lg{width:min(760px,calc(100% - 40px))}
+  .cs-stats{grid-template-columns:repeat(4,1fr)}
+}
+@media(min-width:700px) and (max-width:999px){
+  .app>main{max-width:860px}
+  .cf-grid{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);column-gap:14px;align-items:start}
+  .home-grid{grid-template-columns:1fr 1fr;grid-template-areas:"cash cash" "attn attn" "quick act";column-gap:18px}
+  .hg-cash{grid-area:cash}.hg-attn{grid-area:attn}.hg-quick{grid-area:quick}.hg-act{grid-area:act}
+}
+@media(max-width:420px){
+  .cf-hero strong{font-size:1.75rem}.cs-top strong{font-size:2rem}
+  .fl,.cat{grid-template-columns:88px 1fr auto}
+  .chart-legend{font-size:.58rem}
+}

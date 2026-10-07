@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <title>Finvia — SME Finance</title>
-  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/app.css?v=13">
 </head>
 <body>
   <div id="app" class="app">
@@ -22,35 +22,64 @@
       <section class="screen active" data-screen="home">
         <div class="greeting"><div><p class="eyebrow" id="todayLabel">FINVIA</p><h1 id="greeting">Good morning</h1><p>Here is where your cash is heading.</p></div><button class="avatar" id="profileBtn">SME</button></div>
 
-        <section class="cash-card">
-          <div class="cash-card-top"><span>Available cash</span><button id="refreshBtn" class="mini-icon" aria-label="Refresh">↻</button></div>
-          <strong id="cashValue">RM 48,600</strong>
-          <div class="cash-status"><span class="status-dot"></span><span id="cashStatus">Healthy today</span><span class="divider">•</span><span>30-day view</span></div>
-          <div class="mini-chart" id="miniChart" aria-label="30-day cash forecast"></div>
-        </section>
-
-        <button class="attention-card" id="attentionBtn">
-          <span class="attention-icon">!</span><span class="attention-copy"><b id="attentionTitle">Potential cash gap ahead</b><small id="attentionText">Finvia sees a low-cash window before expected customer payments.</small></span><span class="chevron">›</span>
-        </button>
-
-        <div class="section-head"><h2>Quick actions</h2><button class="text-btn" id="seeAllBtn">See all</button></div>
-        <div class="quick-grid">
-          <button class="quick-card" data-action="upload"><span class="quick-icon blue">＋</span><b>Upload</b><small>Statement or receipt</small></button>
-          <button class="quick-card" data-action="forecast"><span class="quick-icon purple">↗</span><b>Cash flow</b><small>7–30 day outlook</small></button>
-          <button class="quick-card" data-action="tax"><span class="quick-icon pink">✓</span><b>Tax signals</b><small>Review opportunities</small></button>
-          <button class="quick-card" data-action="finance"><span class="quick-icon navy">$</span><b>Financing</b><small>Explore referral</small></button>
+        <div class="home-grid">
+          <div class="hg-cash">
+            <section class="cash-card" id="cashCard" role="button" tabindex="0" aria-label="Open available cash details">
+              <div class="cash-card-top"><span>Available cash</span><button id="refreshBtn" class="mini-icon" aria-label="Refresh">↻</button></div>
+              <strong id="cashValue">RM 48,600</strong>
+              <div class="cash-status"><span class="status-dot"></span><span id="cashStatus">Healthy today</span><span class="divider">•</span><span id="cashAsOf">30-day view</span></div>
+              <div class="mini-chart" id="miniChart" aria-label="30-day cash forecast"></div>
+              <div class="cash-more"><span>See where it came from and went</span><span aria-hidden="true">›</span></div>
+            </section>
+          </div>
+          <div class="hg-attn">
+            <button class="attention-card" id="attentionBtn">
+              <span class="attention-icon">!</span><span class="attention-copy"><b id="attentionTitle">Potential cash gap ahead</b><small id="attentionText">Finvia sees a low-cash window before expected customer payments.</small></span><span class="chevron">›</span>
+            </button>
+          </div>
+          <div class="hg-quick">
+            <div class="section-head"><h2>Quick actions</h2><button class="text-btn" id="seeAllBtn">See all</button></div>
+            <div class="quick-grid">
+              <button class="quick-card" data-action="upload"><span class="quick-icon blue">＋</span><b>Upload</b><small>Statement or receipt</small></button>
+              <button class="quick-card" data-action="forecast"><span class="quick-icon purple">↗</span><b>Cash flow</b><small>7–30 day outlook</small></button>
+              <button class="quick-card" data-action="tax"><span class="quick-icon pink">✓</span><b>Tax signals</b><small>Review opportunities</small></button>
+              <button class="quick-card" data-action="finance"><span class="quick-icon navy">$</span><b>Financing</b><small>Explore referral</small></button>
+            </div>
+          </div>
+          <div class="hg-act">
+            <div class="section-head"><h2>Coming up</h2><button class="text-btn" data-nav="cashflow">Full outlook</button></div>
+            <div class="activity-list" id="homeActivity"></div>
+          </div>
         </div>
-
-        <div class="section-head"><h2>Recent activity</h2><button class="text-btn" data-nav="documents">View all</button></div>
-        <div class="activity-list" id="homeActivity"></div>
       </section>
 
       <section class="screen" data-screen="cashflow">
         <div class="page-title"><p class="eyebrow">CASH FLOW</p><h1>Your cash outlook</h1><p>See when money may come in, go out and where a gap could appear.</p></div>
-        <div class="segmented"><button class="active" data-days="7">7 days</button><button data-days="14">14 days</button><button data-days="30">30 days</button></div>
-        <section class="white-card"><div class="card-title"><div><span class="muted">Projected lowest balance</span><strong id="lowBalance">RM 11,150</strong></div><span class="pill warn" id="lowPill">Watch</span></div><div class="large-chart" id="largeChart"></div><p class="chart-note" id="forecastNote">Estimated from the current workspace transaction history.</p></section>
-        <div class="metric-grid"><div class="metric"><span>Expected inflow</span><b id="inflowMetric">RM 31,800</b></div><div class="metric"><span>Expected outflow</span><b id="outflowMetric">RM 37,450</b></div><div class="metric"><span>Cash buffer</span><b>RM 15,000</b></div></div>
-        <section class="white-card"><div class="card-title"><h2>Upcoming</h2><span class="muted">Next 30 days</span></div><div class="event-list" id="eventList"></div></section>
+        <div class="segmented" role="tablist" aria-label="Forecast window"><button class="active" data-days="7">7 days</button><button data-days="14">14 days</button><button data-days="30">30 days</button></div>
+        <div class="cf-grid">
+          <div class="cf-main">
+            <section class="white-card cf-card">
+              <div class="cf-hero">
+                <div><span class="muted" id="cfHeroLabel">Projected balance in 7 days</span><strong id="cfHeroValue">RM 0</strong><span class="cf-delta" id="cfHeroDelta"></span></div>
+                <span class="pill warn" id="lowPill">Watch</span>
+              </div>
+              <div class="large-chart" id="largeChart"></div>
+              <div class="chart-legend"><span><i class="lg-line"></i>Expected balance</span><span><i class="lg-band"></i>Likely range</span><span><i class="lg-buf"></i>Cash buffer</span><span><i class="lg-in"></i>Money in</span><span><i class="lg-out"></i>Money out</span></div>
+              <p class="chart-note" id="forecastNote">Estimated from the current workspace transaction history.</p>
+            </section>
+            <section class="white-card"><div class="card-title"><h2>Week by week</h2><span class="muted" id="weekRange">Net change</span></div><div class="week-bars" id="weekBars"></div></section>
+          </div>
+          <div class="cf-side">
+            <div class="metric-grid">
+              <div class="metric"><span>Money in</span><b id="inflowMetric" class="pos">RM 0</b></div>
+              <div class="metric"><span>Money out</span><b id="outflowMetric" class="neg">RM 0</b></div>
+              <div class="metric"><span>Net change</span><b id="netMetric">RM 0</b></div>
+              <div class="metric"><span>Lowest point</span><b id="lowBalance">RM 0</b><em id="lowDayMetric"></em></div>
+            </div>
+            <section class="white-card"><div class="card-title"><h2>What this means</h2></div><div class="insight-list" id="insightList"></div></section>
+          </div>
+        </div>
+        <section class="white-card"><div class="card-title"><h2>Upcoming payments</h2><span class="muted" id="eventRange">Next 7 days</span></div><div class="event-list" id="eventList"></div></section>
         <section class="finance-banner" id="financeBanner"><div><span class="eyebrow">FINANCING WINDOW</span><h2>Plan before the gap arrives.</h2><p>If your projected cash falls below the buffer, you can choose to request a referral to a participating bank. The bank makes the final decision.</p></div><button class="primary" data-action="finance">Review options</button></section>
       </section>
 
@@ -71,7 +100,7 @@
 
       <section class="screen" data-screen="finance">
         <div class="page-title"><p class="eyebrow">FINANCING</p><h1>Financing opportunity</h1><p>Finvia can prepare a referral when your forecast shows a potential cash shortfall.</p></div>
-        <section class="finance-card"><span class="eyebrow">PROJECTED GAP</span><strong id="gapValue">RM 3,850</strong><div class="gap-row"><span>Lowest point</span><b id="gapDay">Day 19</b></div><div class="gap-row"><span>Estimated buffer</span><b>RM 15,000</b></div></section>
+        <section class="finance-card"><span class="eyebrow">PROJECTED GAP</span><strong id="gapValue">RM 3,850</strong><div class="gap-row"><span>Lowest point</span><b id="gapDay">Day 19</b></div><div class="gap-row"><span>Estimated buffer</span><b><span class="buffer-val">RM 15,000</span></b></div></section>
         <section class="white-card"><h2>How it works</h2><ol class="steps"><li><span>1</span><div><b>Review the forecast</b><small>Finvia shows the projected gap and timing.</small></div></li><li><span>2</span><div><b>Give consent</b><small>You choose whether to request a referral.</small></div></li><li><span>3</span><div><b>Partner bank reviews</b><small>The bank independently approves or declines financing.</small></div></li></ol></section>
         <section class="consent-card"><label class="check"><input type="checkbox" id="consent"><span></span><p>I consent to Finvia submitting a financing referral request to a participating bank.</p></label><button class="primary full" id="referralBtn">Request referral</button><p class="fineprint">Finvia does not approve loans or guarantee financing.</p></section>
       </section>
@@ -102,10 +131,21 @@
   </div>
 
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <section class="sheet" id="uploadSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="uploadSheet">×</button><p class="eyebrow">NEW DOCUMENT</p><h2>What do you want to upload?</h2><p class="muted">Finvia will store the document and analyse supported transaction files.</p><label class="dropzone" for="fileInput"><span class="drop-icon">↑</span><b id="fileLabel">Choose a file</b><small>CSV, XLSX, PDF, JPG or PNG · max 10 MB</small></label><input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png" hidden><div class="selected" id="selectedFile">No file selected</div><button class="primary full" id="uploadSubmit">Analyse with Finvia</button><p class="upload-message" id="uploadMessage"></p></section>
+  <section class="sheet" id="uploadSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="uploadSheet">×</button><p class="eyebrow">NEW DOCUMENT</p><h2>What do you want to upload?</h2><p class="muted">Finvia will store the document and analyse supported transaction files.</p><label class="dropzone" for="fileInput"><span class="drop-icon">↑</span><b id="fileLabel">Choose a file</b><small>CSV, XLSX, PDF, JPG or PNG · max 10 MB</small></label><input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png" hidden><div class="selected" id="selectedFile">No file selected</div><button class="primary full" id="uploadSubmit">Analyse with Finvia</button><p class="upload-message" id="uploadMessage" role="status" aria-live="polite"></p></section>
+  <section class="sheet sheet-lg" id="cashSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="cashSheet" aria-label="Close">×</button>
+    <p class="eyebrow">AVAILABLE CASH</p>
+    <div class="cs-top"><strong id="csValue">RM 0</strong><span class="cs-delta" id="csDelta"></span></div>
+    <p class="muted" id="csAsOf"></p>
+    <div class="cs-chart" id="csChart"></div>
+    <div class="cs-stats" id="csStats"></div>
+    <h3 class="cs-h">Last 30 days</h3><div id="csFlow" class="cs-flow"></div>
+    <h3 class="cs-h">Where the money went</h3><div id="csCats" class="cs-cats"></div>
+    <h3 class="cs-h">Recent transactions</h3><div id="csRecent" class="event-list"></div>
+    <div class="cs-actions"><button class="primary" id="csForecast">See forecast</button><button class="secondary" id="csUpload">Upload statement</button></div>
+  </section>
   <section class="sheet" id="reportSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="reportSheet">×</button><p class="eyebrow">REPORT</p><h2>Annual Tax-Incentive Report</h2><p class="muted">Indicative signals from the current workspace.</p><div id="reportBody" class="report-body"></div><button class="secondary full" data-close="reportSheet">Close</button></section>
   <section class="sheet" id="notifySheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="notifySheet">×</button><p class="eyebrow">NOTIFICATIONS</p><h2>What needs your attention</h2><div class="notification-item"><span class="attention-icon">!</span><div><b>Potential cash gap</b><small id="notifGapText">Your projected balance may fall below the buffer around day 19.</small></div></div><div class="notification-item"><span class="quick-icon pink">✓</span><div><b>Tax incentive signal</b><small>Software subscriptions may be relevant to a digital expense incentive.</small></div></div></section>
   <div class="toast" id="toast"></div>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=13"></script>
 </body>
 </html>

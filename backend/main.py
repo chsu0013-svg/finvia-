@@ -8,7 +8,11 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
+import logging
+
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -16,7 +20,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from analysis import analyse_upload, build_demo_dashboard, build_tax_report, new_state
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 BASE = Path(__file__).resolve().parent
 FRONTEND = Path(os.getenv("FRONTEND_DIR", BASE.parent / "frontend"))
 UPLOADS = Path(os.getenv("UPLOAD_DIR", BASE.parent / "uploads"))
@@ -91,6 +95,16 @@ class SecurityHeaders(BaseHTTPMiddleware):
 
 app = FastAPI(title="Finvia API", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 app.add_middleware(SecurityHeaders)
+log = logging.getLogger("finvia")
+
+
+@app.exception_handler(Exception)
+async def unhandled(request: Request, exc: Exception):
+    # Always answer with JSON so the browser can show a real message instead of "Failed to fetch".
+    log.exception("Unhandled error on %s", request.url.path)
+    return JSONResponse({"detail": "Something went wrong on the server. Please try again."}, status_code=500)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ORIGINS,
@@ -141,8 +155,9 @@ async def upload(file: UploadFile = File(...), state: dict = Depends(workspace))
         target.unlink(missing_ok=True)
         raise
 
-    result = analyse_upload(target, file.filename, state)
-    return {"message": result["message"], "dashboard": result["dashboard"]}
+    # pandas parsing is CPU-bound: keep it off the event loop so health checks stay responsive.
+    result = await run_in_threadpool(analyse_upload, target, file.filename, state)
+    return {"ok": result.get("ok", True), "message": result["message"], "dashboard": result["dashboard"]}
 
 
 @app.get("/api/tax-report")
