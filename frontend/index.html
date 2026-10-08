@@ -12,6 +12,13 @@
   <link rel="stylesheet" href="/app.css?v=13">
 </head>
 <body>
+  <div class="intro" id="intro">
+    <div class="in-c"><img class="in-mark" src="/finvia-mark.png" alt=""><img class="in-word" src="/finvia-word.png" alt="Finvia"></div>
+    <p class="in-tag">Your cash, seen 30 days ahead.</p>
+    <div class="in-bar"><i></i></div>
+    <button class="in-skip" type="button" id="skip" aria-label="Skip intro">Skip</button>
+  </div>
+  <script>try{if(sessionStorage.getItem('finviaIntro')==='1')document.getElementById('intro').remove()}catch(e){}</script>
   <div id="app" class="app">
     <header class="app-header">
       <div class="brand"><img src="/icon-512.png" alt="Finvia"><div><strong>Finvia</strong><span>SME Finance</span></div></div>
