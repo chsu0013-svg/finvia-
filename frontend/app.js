@@ -1,3 +1,16 @@
+/* Opening page: same animation as the website. Plays once per browser session. */
+(function(){
+  var intro=document.getElementById('intro'),root=document.documentElement;
+  if(!intro)return;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){intro.remove();return}
+  try{sessionStorage.setItem('finviaIntro','1')}catch(e){}
+  root.classList.add('lock');
+  var tm=setTimeout(function(){root.classList.remove('lock')},3000);
+  intro.addEventListener('animationend',function(e){if(e.target===intro&&e.animationName==='introOut'){intro.remove();root.classList.remove('lock')}});
+  function skip(){clearTimeout(tm);intro.classList.add('skip');setTimeout(function(){root.classList.remove('lock')},260)}
+  intro.addEventListener('click',skip);
+  addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('intro'))skip()});
+})();
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let data=null, days=7, selectedFile=null, deferredInstall=null;
 
