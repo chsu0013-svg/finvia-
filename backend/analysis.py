@@ -401,7 +401,7 @@ def build_demo_dashboard(state):
     series = _series(START, DEMO_EVENTS)
     anchor = date.today()
     # A believable 30-day look-back so the Available cash view has something to show.
-    hist = [START - 5200 + i * 175 + (-1) ** i * 600 for i in range(30)] + [START]
+    hist = [START - 4600 + i * 150 for i in range(30)] + [START]
     cats = [{"name": "Suppliers & stock", "amount": 21400}, {"name": "Payroll", "amount": 19000},
             {"name": "Rent & utilities", "amount": 6800}, {"name": "Tax", "amount": 6500}]
     recent = [
