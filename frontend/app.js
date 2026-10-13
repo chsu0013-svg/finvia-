@@ -325,7 +325,7 @@ function showAuth(msg){
   $('#authOverlay').classList.remove('pending');$('#authOverlay').classList.add('show');
   if(msg)setAuthMsg(msg);
 }
-function hideAuth(){$('#authOverlay').classList.remove('show','pending');$('#signOutBtn').classList.add('show')}
+function hideAuth(){$('#app').classList.add('ready');$('#authOverlay').classList.remove('show','pending');$('#signOutBtn').classList.add('show')}
 
 $('#authSwitch').onclick=()=>setAuthMode(authMode==='login'?'register':'login');
 $('#authCard').onsubmit=async e=>{
