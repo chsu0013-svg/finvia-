@@ -239,7 +239,14 @@ function go(screen){
 }
 function openSheet(id){$('#sheetBackdrop').classList.add('show');$('#'+id).classList.add('open');$('#'+id).setAttribute('aria-hidden','false');$('#fab').classList.add('open');if(id==='cashSheet')requestAnimationFrame(()=>sparkline((data.cash||{}).history||[]))}
 function closeSheet(id){$('#'+id).classList.remove('open');$('#'+id).setAttribute('aria-hidden','true');if(!$$('.sheet.open').length){$('#sheetBackdrop').classList.remove('show');$('#fab').classList.remove('open')}}
-async function load(){try{const r=await fetch('/api/dashboard',{cache:'no-store'});if(r.ok)data=await r.json()}catch(e){}render()}
+async function load(){
+  try{
+    const r=await fetch('/api/dashboard',{cache:'no-store'});
+    if(r.status===401){showAuth('Please sign in to continue.');return}
+    if(r.ok)data=await r.json();
+  }catch(e){}
+  render();
+}
 
 const hr=new Date().getHours();$('#greeting').textContent=(hr<12?'Good morning':hr<18?'Good afternoon':'Good evening');$('#todayLabel').textContent=new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'short'}).toUpperCase();
 $$('[data-nav]').forEach(b=>b.onclick=()=>go(b.dataset.nav));
@@ -255,6 +262,92 @@ $$('.segmented button').forEach(b=>b.onclick=()=>{$$('.segmented button').forEac
 $$('.filter').forEach(b=>b.onclick=()=>{$$('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderDocs(b.dataset.filter)});
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(data){drawLarge(days);sparkline((data.cash||{}).history||[])}},120)});
 
+/* ---------- Sign in / register (Supabase, through the backend) ---------- */
+let authMode='login', currentUser=null;
+(function(){
+  const css=document.createElement('style');
+  css.textContent=`
+  #authOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.55);backdrop-filter:blur(6px)}
+  #authOverlay.show{display:flex}
+  #authCard{width:100%;max-width:380px;background:#fff;color:#0f172a;border-radius:22px;padding:26px 22px;box-shadow:0 24px 60px rgba(0,0,0,.28);font-family:inherit}
+  #authCard h2{margin:0 0 4px;font-size:22px}
+  #authCard p.sub{margin:0 0 18px;color:#64748b;font-size:14px}
+  #authCard label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+  #authCard input{width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid #cbd5e1;border-radius:12px;font-size:16px;font-family:inherit}
+  #authCard input:focus{outline:none;border-color:#2124a0}
+  #authSubmit{width:100%;margin-top:18px;padding:13px;border:0;border-radius:12px;background:#2124a0;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+  #authSubmit:disabled{opacity:.6;cursor:default}
+  #authSwitch{display:block;width:100%;margin-top:12px;background:none;border:0;color:#2124a0;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  #authMsg{min-height:20px;margin-top:12px;font-size:14px;color:#b91c1c}
+  #authMsg.ok{color:#15803d}
+  #signOutBtn{position:fixed;top:10px;right:10px;z-index:900;display:none;padding:7px 12px;border:1px solid #cbd5e1;border-radius:999px;background:rgba(255,255,255,.92);color:#0f172a;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  #signOutBtn.show{display:block}`;
+  document.head.appendChild(css);
+
+  const ov=document.createElement('div');ov.id='authOverlay';
+  ov.innerHTML=`<form id="authCard" novalidate>
+    <h2 id="authTitle">Sign in</h2><p class="sub" id="authSub">Welcome back to Finvia.</p>
+    <label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="email" inputmode="email">
+    <label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password">
+    <button type="submit" id="authSubmit">Sign in</button>
+    <button type="button" id="authSwitch">New here? Create an account</button>
+    <div id="authMsg" role="status"></div></form>`;
+  document.body.appendChild(ov);
+
+  const so=document.createElement('button');so.id='signOutBtn';so.type='button';so.textContent='Sign out';
+  document.body.appendChild(so);
+})();
+
+function setAuthMode(mode){
+  authMode=mode;
+  const reg=mode==='register';
+  $('#authTitle').textContent=reg?'Create account':'Sign in';
+  $('#authSub').textContent=reg?'Register to start using Finvia.':'Welcome back to Finvia.';
+  $('#authSubmit').textContent=reg?'Create account':'Sign in';
+  $('#authSwitch').textContent=reg?'Already have an account? Sign in':'New here? Create an account';
+  $('#authPassword').setAttribute('autocomplete',reg?'new-password':'current-password');
+  setAuthMsg('');
+}
+function setAuthMsg(text,ok){const m=$('#authMsg');m.textContent=text||'';m.className=ok?'ok':''}
+function showAuth(msg){
+  currentUser=null;$('#signOutBtn').classList.remove('show');
+  $('#authOverlay').classList.add('show');
+  if(msg)setAuthMsg(msg);
+}
+function hideAuth(){$('#authOverlay').classList.remove('show');$('#signOutBtn').classList.add('show')}
+
+$('#authSwitch').onclick=()=>setAuthMode(authMode==='login'?'register':'login');
+$('#authCard').onsubmit=async e=>{
+  e.preventDefault();
+  const email=$('#authEmail').value.trim(), password=$('#authPassword').value;
+  if(!email||!password){setAuthMsg('Enter your email and password.');return}
+  const btn=$('#authSubmit');btn.disabled=true;setAuthMsg('Please wait…',true);
+  try{
+    const r=await fetch('/api/auth/'+authMode,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    let j=null;try{j=await r.json()}catch(_){}
+    if(!r.ok){setAuthMsg((j&&j.detail)||'Something went wrong. Please try again.');return}
+    if(j.signed_in){
+      currentUser=j.user;$('#authPassword').value='';setAuthMsg('');hideAuth();
+      toast('Signed in as '+j.user.email);await load();
+    }else{
+      // Account created but email confirmation is required.
+      setAuthMode('login');setAuthMsg(j.message||'Account created. Please sign in.',true);
+    }
+  }catch(_){setAuthMsg('Cannot reach the Finvia server. Please try again.')}
+  finally{btn.disabled=false}
+};
+$('#signOutBtn').onclick=async()=>{
+  try{await fetch('/api/auth/logout',{method:'POST'})}catch(_){}
+  data=null;showAuth();setAuthMode('login');
+};
+async function boot(){
+  try{
+    const r=await fetch('/api/auth/me',{cache:'no-store'});
+    if(r.ok){const j=await r.json();currentUser=j.user;hideAuth();await load();return}
+  }catch(_){}
+  showAuth();
+}
+
 /* ---------- Upload ---------- */
 function setUploadMsg(text,kind){const m=$('#uploadMessage');m.textContent=text;m.className='upload-message'+(kind?' '+kind:'')}
 $('#fileInput').onchange=e=>{selectedFile=e.target.files[0]||null;$('#selectedFile').textContent=selectedFile?selectedFile.name:'No file selected';$('#fileLabel').textContent=selectedFile?selectedFile.name:'Choose a file';setUploadMsg('')};
@@ -269,6 +362,7 @@ $('#uploadSubmit').onclick=async()=>{
     let r;
     try{r=await fetch('/api/upload',{method:'POST',body:fd})}
     catch(_){throw new Error('Cannot reach the Finvia server. Check your connection and that the server is running, then try again.')}
+    if(r.status===401){closeSheet('uploadSheet');showAuth('Your session expired. Please sign in again.');throw new Error('Please sign in again.')}
     let j=null;try{j=await r.json()}catch(_){}
     if(!r.ok)throw new Error((j&&j.detail)||`The server returned an error (${r.status}). Please try again.`);
     if(j.ok===false){setUploadMsg(j.message||'Could not analyse this file.','error');return}
@@ -278,7 +372,7 @@ $('#uploadSubmit').onclick=async()=>{
   finally{btn.disabled=false}
 };
 
-$('#reportBtn').onclick=async()=>{openSheet('reportSheet');$('#reportBody').innerHTML='<p class="muted">Loading report…</p>';try{const r=await fetch('/api/tax-report');const j=await r.json();$('#reportBody').innerHTML=(j.items||[]).map(x=>`<div class="report-row"><b>${esc(x.title)}</b><small>${esc(x.text||x.description||'Review supporting documents and eligibility.')}</small></div>`).join('')||'<div class="report-row"><b>No report items yet</b><small>Upload invoices or receipts to create signals.</small></div>'}catch(e){$('#reportBody').innerHTML='<div class="report-row"><b>Report unavailable</b><small>Please try again.</small></div>'}};
-$('#referralBtn').onclick=async()=>{if(!$('#consent').checked){toast('Please give consent before requesting a referral');return}$('#referralBtn').disabled=true;try{const r=await fetch('/api/referral',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({consent:true})});const j=await r.json();if(!r.ok)throw new Error(j.detail||'Request failed');toast('Referral request submitted');$('#referralBtn').textContent='Referral submitted'}catch(e){toast(e.message)}finally{$('#referralBtn').disabled=false}};
+$('#reportBtn').onclick=async()=>{openSheet('reportSheet');$('#reportBody').innerHTML='<p class="muted">Loading report…</p>';try{const r=await fetch('/api/tax-report');if(r.status===401){closeSheet('reportSheet');showAuth('Your session expired. Please sign in again.');return}const j=await r.json();$('#reportBody').innerHTML=(j.items||[]).map(x=>`<div class="report-row"><b>${esc(x.title)}</b><small>${esc(x.text||x.description||'Review supporting documents and eligibility.')}</small></div>`).join('')||'<div class="report-row"><b>No report items yet</b><small>Upload invoices or receipts to create signals.</small></div>'}catch(e){$('#reportBody').innerHTML='<div class="report-row"><b>Report unavailable</b><small>Please try again.</small></div>'}};
+$('#referralBtn').onclick=async()=>{if(!$('#consent').checked){toast('Please give consent before requesting a referral');return}$('#referralBtn').disabled=true;try{const r=await fetch('/api/referral',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({consent:true})});if(r.status===401){showAuth('Your session expired. Please sign in again.');return}const j=await r.json();if(!r.ok)throw new Error(j.detail||'Request failed');toast('Referral request submitted');$('#referralBtn').textContent='Referral submitted'}catch(e){toast(e.message)}finally{$('#referralBtn').disabled=false}};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e});$('#installBtn').onclick=async()=>{if(deferredInstall){deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null}else toast('Use your browser menu to add Finvia to your home screen')};$('#aboutBtn').onclick=()=>toast('Finvia prototype · SME cash, tax signals and financing referral');
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/service-worker.js').catch(()=>{});load();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/service-worker.js').catch(()=>{});boot();
