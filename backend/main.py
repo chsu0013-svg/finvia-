@@ -10,7 +10,7 @@ from pathlib import Path
 
 import logging
 
-from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,8 +19,9 @@ from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from analysis import analyse_upload, build_demo_dashboard, build_tax_report, new_state
+from auth import current_user, router as auth_router
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 BASE = Path(__file__).resolve().parent
 FRONTEND = Path(os.getenv("FRONTEND_DIR", BASE.parent / "frontend"))
 UPLOADS = Path(os.getenv("UPLOAD_DIR", BASE.parent / "uploads"))
@@ -34,33 +35,23 @@ ALLOWED_EXT = {".csv", ".xlsx", ".xls", ".pdf", ".png", ".jpg", ".jpeg"}
 # ALLOWED_ORIGINS if the frontend is hosted on a different domain.
 ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()] or ["*"]
 
-# ---------- Per-visitor workspace (in memory) ----------
-# Each browser gets its own workspace via an HttpOnly cookie, so one visitor's
-# uploaded statement is never shown to another. Capped so memory cannot grow
-# without bound. Replace with a database before handling real SME data.
-SESSION_COOKIE = "finvia_sid"
+# ---------- Per-user workspace (in memory) ----------
+# Each signed-in Supabase user gets their own workspace, keyed by user id, so one
+# user's uploaded statement is never shown to another. Capped so memory cannot
+# grow without bound. Replace with a database table before handling real SME data.
 SESSION_MAX = 500
 _sessions: "OrderedDict[str, dict]" = OrderedDict()
 
 
-def workspace(request: Request, response: Response) -> dict:
-    sid = request.cookies.get(SESSION_COOKIE)
-    if not sid or sid not in _sessions:
-        sid = uuid.uuid4().hex
-        _sessions[sid] = new_state()
+def workspace(user: dict = Depends(current_user)) -> dict:
+    uid = user["id"]
+    if uid not in _sessions:
+        _sessions[uid] = new_state()
         while len(_sessions) > SESSION_MAX:
             _sessions.popitem(last=False)
-        response.set_cookie(
-            SESSION_COOKIE,
-            sid,
-            max_age=60 * 60 * 24 * 7,
-            httponly=True,
-            samesite="lax",
-            secure=request.url.scheme == "https",
-        )
     else:
-        _sessions.move_to_end(sid)
-    return _sessions[sid]
+        _sessions.move_to_end(uid)
+    return _sessions[uid]
 
 
 # ---------- Security headers ----------
@@ -113,6 +104,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Supabase sign-up / login / logout
+app.include_router(auth_router)
+
 
 # ---------- Health ----------
 @app.get("/health")
@@ -125,7 +119,7 @@ def api_health():
     return {"status": "ok", "service": "finvia-api", "version": VERSION}
 
 
-# ---------- API ----------
+# ---------- API (all require a signed-in user) ----------
 @app.get("/api/dashboard")
 def dashboard(state: dict = Depends(workspace)):
     return build_demo_dashboard(state)
@@ -170,7 +164,7 @@ class Referral(BaseModel):
 
 
 @app.post("/api/referral")
-def referral(payload: Referral):
+def referral(payload: Referral, user: dict = Depends(current_user)):
     if not payload.consent:
         raise HTTPException(400, "Consent is required.")
     return {
