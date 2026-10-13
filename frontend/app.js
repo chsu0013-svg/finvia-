@@ -5,19 +5,21 @@ let introTemplate=null;
   if(el){introTemplate=el.cloneNode(true);el.remove()}
 })();
 function playIntro(){
-  if(!introTemplate)return;
-  try{sessionStorage.setItem('finviaIntro','1')}catch(e){}
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-  var root=document.documentElement,intro=introTemplate.cloneNode(true);
-  document.body.prepend(intro);
-  root.classList.add('lock');
-  var tm=setTimeout(function(){root.classList.remove('lock')},3000);
-  function onKey(e){if(e.key==='Escape'&&document.getElementById('intro'))skip()}
-  function done(){clearTimeout(tm);removeEventListener('keydown',onKey);intro.remove();root.classList.remove('lock')}
-  intro.addEventListener('animationend',function(e){if(e.target===intro&&e.animationName==='introOut')done()});
-  function skip(){clearTimeout(tm);intro.classList.add('skip');setTimeout(done,260)}
-  intro.addEventListener('click',skip);
-  addEventListener('keydown',onKey);
+  return new Promise(function(resolve){
+    if(!introTemplate){resolve();return}
+    try{sessionStorage.setItem('finviaIntro','1')}catch(e){}
+    if(matchMedia('(prefers-reduced-motion:reduce)').matches){resolve();return}
+    var root=document.documentElement,intro=introTemplate.cloneNode(true);
+    document.body.prepend(intro);
+    root.classList.add('lock');
+    var tm=setTimeout(function(){root.classList.remove('lock')},3000);
+    function onKey(e){if(e.key==='Escape'&&document.getElementById('intro'))skip()}
+    function done(){clearTimeout(tm);removeEventListener('keydown',onKey);intro.remove();root.classList.remove('lock');resolve()}
+    intro.addEventListener('animationend',function(e){if(e.target===intro&&e.animationName==='introOut')done()});
+    function skip(){clearTimeout(tm);intro.classList.add('skip');setTimeout(done,260)}
+    intro.addEventListener('click',skip);
+    addEventListener('keydown',onKey);
+  });
 }
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let data=null, days=7, selectedFile=null, deferredInstall=null;
@@ -278,6 +280,7 @@ let authMode='login', currentUser=null;
   #authOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#e6efff 0%,#f7f9ff 55%,#eceeff 100%);overflow-y:auto}
   #authOverlay.show,#authOverlay.pending{display:flex}
   #authOverlay.pending #authCard{visibility:hidden}
+  #intro{z-index:10000!important}
   #authCard{width:100%;max-width:380px;background:#fff;color:#0f172a;border-radius:22px;padding:26px 22px;box-shadow:0 24px 60px rgba(33,36,160,.18);font-family:inherit}
   #authLogo{display:block;height:48px;width:auto;max-width:100%;margin:0 auto 20px}
   #authCard h2{margin:0 0 4px;font-size:22px}
@@ -340,7 +343,6 @@ $('#authCard').onsubmit=async e=>{
     if(j.signed_in){
       // Signed in: hide the sign-in screen, play the opening page, then show the dashboard.
       currentUser=j.user;$('#authPassword').value='';setAuthMsg('');hideAuth();
-      playIntro();
       await load();
     }else{
       // Account created but email confirmation is required.
@@ -354,16 +356,12 @@ $('#signOutBtn').onclick=async()=>{
   data=null;showAuth();setAuthMode('login');
 };
 async function boot(){
-  try{
-    const r=await fetch('/api/auth/me',{cache:'no-store'});
-    if(r.ok){
-      const j=await r.json();currentUser=j.user;hideAuth();
-      // Already signed in: play the opening page once per browser session.
-      let seen=false;try{seen=!!sessionStorage.getItem('finviaIntro')}catch(_){}
-      if(!seen)playIntro();
-      await load();return;
-    }
-  }catch(_){}
+  // Ask the server in the background while the opening page plays.
+  const check=fetch('/api/auth/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+  let seen=false;try{seen=!!sessionStorage.getItem('finviaIntro')}catch(_){}
+  if(!seen)await playIntro();
+  const j=await check;
+  if(j){currentUser=j.user;hideAuth();await load();return}
   showAuth();
 }
 
