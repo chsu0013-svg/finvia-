@@ -113,6 +113,11 @@ jobs:
           max-task-count: 1
           cpu: '512'
           memory: '1024'
+          environment-variables: |
+            [
+              {"name":"SUPABASE_URL","value":"${{ secrets.SUPABASE_URL }}"},
+              {"name":"SUPABASE_KEY","value":"${{ secrets.SUPABASE_KEY }}"}
+            ]
 
       - name: Show live URL
         run: echo "Finvia is live at ${{ steps.deploy.outputs.endpoint }}"
