@@ -8,8 +8,12 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Finvia">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Finvia — SME Finance</title>
-  <link rel="stylesheet" href="/app.css?v=14">
+  <link rel="stylesheet" href="/app.css?v=16">
   <style>#app:not(.ready){display:none!important}</style>
 </head>
 <body>
@@ -153,7 +157,19 @@
   </section>
   <section class="sheet" id="reportSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="reportSheet">×</button><p class="eyebrow">REPORT</p><h2>Annual Tax-Incentive Report</h2><p class="muted">Indicative signals from the current workspace.</p><div id="reportBody" class="report-body"></div><button class="secondary full" data-close="reportSheet">Close</button></section>
   <section class="sheet" id="notifySheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="notifySheet">×</button><p class="eyebrow">NOTIFICATIONS</p><h2>What needs your attention</h2><div class="notification-item"><span class="attention-icon">!</span><div><b>Potential cash gap</b><small id="notifGapText">Your projected balance may fall below the buffer around day 19.</small></div></div><div class="notification-item"><span class="quick-icon pink">✓</span><div><b>Tax incentive signal</b><small>Software subscriptions may be relevant to a digital expense incentive.</small></div></div></section>
+    <section class="sheet sheet-ios" id="iosInstallSheet" aria-hidden="true"><div class="sheet-handle"></div><button class="sheet-close" data-close="iosInstallSheet" aria-label="Close">×</button>
+    <p class="eyebrow">INSTALL</p><h2>Add Finvia to your Home Screen</h2>
+    <p class="muted">iPhone doesn't allow one-tap install, so it takes three quick steps:</p>
+    <p class="ios-warn" id="iosNotSafari" hidden>For the smoothest install, open this page in Safari first.</p>
+    <ol class="ios-steps">
+      <li><span class="ios-n">1</span><div><b id="iosStep1Title">Tap ⋯, then Share</b><small id="iosShareHint">The ⋯ button is at the bottom-right of Safari. Choose Share from the menu.</small></div><span class="ios-ic" id="iosStep1Icon"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></span></li>
+      <li><span class="ios-n">2</span><div><b>Tap “Add to Home Screen”</b><small>Scroll down in the share sheet. If you don't see it, tap “View More”.</small></div><span class="ios-ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg></span></li>
+      <li><span class="ios-n">3</span><div><b>Tap “Add”</b><small>Finvia will appear on your Home Screen like a normal app.</small></div><span class="ios-ic ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></li>
+    </ol>
+    <button class="secondary full" data-close="iosInstallSheet">Got it</button>
+  </section>
+  <div class="ios-arrow" id="iosArrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15M5.5 12.5L12 19l6.5-6.5"/></svg><span id="iosArrowLabel">Tap ⋯</span></div>
   <div class="toast" id="toast"></div>
-  <script src="/app.js?v=16"></script>
+  <script src="/app.js?v=18"></script>
 </body>
 </html>
