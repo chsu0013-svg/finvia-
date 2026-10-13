@@ -184,3 +184,4 @@ html.lock{overflow:hidden}
 @keyframes introBlob{from{transform:scale(.2);opacity:0}}
 @keyframes introBar{from{transform:scaleX(0)}}
 @keyframes introUp{from{opacity:0;transform:translateY(26px)}}
+#app:not(.ready){display:none!important}
