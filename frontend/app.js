@@ -1,16 +1,24 @@
-/* Opening page: same animation as the website. Plays once per browser session. */
+/* Opening page: plays right AFTER the user signs in (see playIntro below). */
+let introTemplate=null;
 (function(){
-  var intro=document.getElementById('intro'),root=document.documentElement;
-  if(!intro)return;
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches){intro.remove();return}
+  var el=document.getElementById('intro');
+  if(el){introTemplate=el.cloneNode(true);el.remove()}
+})();
+function playIntro(){
+  if(!introTemplate)return;
   try{sessionStorage.setItem('finviaIntro','1')}catch(e){}
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  var root=document.documentElement,intro=introTemplate.cloneNode(true);
+  document.body.prepend(intro);
   root.classList.add('lock');
   var tm=setTimeout(function(){root.classList.remove('lock')},3000);
-  intro.addEventListener('animationend',function(e){if(e.target===intro&&e.animationName==='introOut'){intro.remove();root.classList.remove('lock')}});
-  function skip(){clearTimeout(tm);intro.classList.add('skip');setTimeout(function(){root.classList.remove('lock')},260)}
+  function onKey(e){if(e.key==='Escape'&&document.getElementById('intro'))skip()}
+  function done(){clearTimeout(tm);removeEventListener('keydown',onKey);intro.remove();root.classList.remove('lock')}
+  intro.addEventListener('animationend',function(e){if(e.target===intro&&e.animationName==='introOut')done()});
+  function skip(){clearTimeout(tm);intro.classList.add('skip');setTimeout(done,260)}
   intro.addEventListener('click',skip);
-  addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('intro'))skip()});
-})();
+  addEventListener('keydown',onKey);
+}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let data=null, days=7, selectedFile=null, deferredInstall=null;
 
@@ -267,9 +275,10 @@ let authMode='login', currentUser=null;
 (function(){
   const css=document.createElement('style');
   css.textContent=`
-  #authOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.55);backdrop-filter:blur(6px)}
+  #authOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#e6efff 0%,#f7f9ff 55%,#eceeff 100%);overflow-y:auto}
   #authOverlay.show{display:flex}
-  #authCard{width:100%;max-width:380px;background:#fff;color:#0f172a;border-radius:22px;padding:26px 22px;box-shadow:0 24px 60px rgba(0,0,0,.28);font-family:inherit}
+  #authCard{width:100%;max-width:380px;background:#fff;color:#0f172a;border-radius:22px;padding:26px 22px;box-shadow:0 24px 60px rgba(33,36,160,.18);font-family:inherit}
+  #authLogo{display:block;height:48px;width:auto;max-width:100%;margin:0 auto 20px}
   #authCard h2{margin:0 0 4px;font-size:22px}
   #authCard p.sub{margin:0 0 18px;color:#64748b;font-size:14px}
   #authCard label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
@@ -286,6 +295,7 @@ let authMode='login', currentUser=null;
 
   const ov=document.createElement('div');ov.id='authOverlay';
   ov.innerHTML=`<form id="authCard" novalidate>
+    <img id="authLogo" src="/finvia-logo.svg" alt="Finvia">
     <h2 id="authTitle">Sign in</h2><p class="sub" id="authSub">Welcome back to Finvia.</p>
     <label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="email" inputmode="email">
     <label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password">
@@ -327,8 +337,10 @@ $('#authCard').onsubmit=async e=>{
     let j=null;try{j=await r.json()}catch(_){}
     if(!r.ok){setAuthMsg((j&&j.detail)||'Something went wrong. Please try again.');return}
     if(j.signed_in){
+      // Signed in: hide the sign-in screen, play the opening page, then show the dashboard.
       currentUser=j.user;$('#authPassword').value='';setAuthMsg('');hideAuth();
-      toast('Signed in as '+j.user.email);await load();
+      playIntro();
+      await load();
     }else{
       // Account created but email confirmation is required.
       setAuthMode('login');setAuthMsg(j.message||'Account created. Please sign in.',true);
@@ -343,7 +355,13 @@ $('#signOutBtn').onclick=async()=>{
 async function boot(){
   try{
     const r=await fetch('/api/auth/me',{cache:'no-store'});
-    if(r.ok){const j=await r.json();currentUser=j.user;hideAuth();await load();return}
+    if(r.ok){
+      const j=await r.json();currentUser=j.user;hideAuth();
+      // Already signed in: play the opening page once per browser session.
+      let seen=false;try{seen=!!sessionStorage.getItem('finviaIntro')}catch(_){}
+      if(!seen)playIntro();
+      await load();return;
+    }
   }catch(_){}
   showAuth();
 }
