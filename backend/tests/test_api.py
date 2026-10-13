@@ -8,13 +8,33 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import main  # noqa: E402
+from auth import current_user  # noqa: E402
 
 
 @pytest.fixture()
-def client(tmp_path, monkeypatch):
+def anon(tmp_path, monkeypatch):
+    """A visitor who is NOT signed in."""
     monkeypatch.setattr(main, "UPLOADS", tmp_path)
     main._sessions.clear()
-    return TestClient(main.app)
+    main.app.dependency_overrides.clear()
+    yield TestClient(main.app)
+    main.app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def who():
+    """Which fake user is signed in. Change who['id'] to switch users."""
+    return {"id": "user-a"}
+
+
+@pytest.fixture()
+def client(anon, who):
+    """A visitor who IS signed in (fake Supabase user, no real login needed)."""
+    main.app.dependency_overrides[current_user] = lambda: {
+        "id": who["id"],
+        "email": f"{who['id']}@example.com",
+    }
+    return anon
 
 
 CSV = (
@@ -55,6 +75,30 @@ def test_security_headers(client):
     assert "default-src 'self'" in r.headers["content-security-policy"]
 
 
+# ---------- Login rules ----------
+def test_api_requires_sign_in(anon):
+    assert anon.get("/api/dashboard").status_code == 401
+    assert anon.get("/api/tax-report").status_code == 401
+    r = anon.post("/api/upload", files={"file": ("stmt.csv", io.BytesIO(CSV.encode()), "text/csv")})
+    assert r.status_code == 401
+    assert anon.post("/api/referral", json={"consent": True}).status_code == 401
+
+
+def test_me_requires_sign_in(anon):
+    assert anon.get("/api/auth/me").status_code == 401
+
+
+def test_register_rejects_bad_email(anon):
+    r = anon.post("/api/auth/register", json={"email": "not-an-email", "password": "secret123"})
+    assert r.status_code == 400
+
+
+def test_register_rejects_short_password(anon):
+    r = anon.post("/api/auth/register", json={"email": "a@example.com", "password": "123"})
+    assert r.status_code == 400
+
+
+# ---------- API (signed in) ----------
 def test_demo_dashboard_shape(client):
     d = client.get("/api/dashboard").json()
     assert len(d["balances"]) == 31 and d["start"] == 48600
@@ -71,11 +115,16 @@ def test_upload_csv_and_tax_signals(client):
     assert client.get("/api/tax-report").json()["items"]
 
 
-def test_workspaces_are_private_per_visitor(client):
+def test_workspaces_are_private_per_user(client, who):
+    # User A uploads a statement.
     client.post("/api/upload", files={"file": ("stmt.csv", io.BytesIO(CSV.encode()), "text/csv")})
     assert client.get("/api/dashboard").json()["start"] == 39240
-    other = TestClient(main.app)  # no cookie -> its own fresh workspace
-    assert other.get("/api/dashboard").json()["start"] == 48600
+    # User B is a different signed-in user: gets a fresh workspace.
+    who["id"] = "user-b"
+    assert client.get("/api/dashboard").json()["start"] == 48600
+    # Back to user A: their upload is still there.
+    who["id"] = "user-a"
+    assert client.get("/api/dashboard").json()["start"] == 39240
 
 
 def test_upload_rejects_bad_type(client):
