@@ -276,7 +276,8 @@ let authMode='login', currentUser=null;
   const css=document.createElement('style');
   css.textContent=`
   #authOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#e6efff 0%,#f7f9ff 55%,#eceeff 100%);overflow-y:auto}
-  #authOverlay.show{display:flex}
+  #authOverlay.show,#authOverlay.pending{display:flex}
+  #authOverlay.pending #authCard{visibility:hidden}
   #authCard{width:100%;max-width:380px;background:#fff;color:#0f172a;border-radius:22px;padding:26px 22px;box-shadow:0 24px 60px rgba(33,36,160,.18);font-family:inherit}
   #authLogo{display:block;height:48px;width:auto;max-width:100%;margin:0 auto 20px}
   #authCard h2{margin:0 0 4px;font-size:22px}
@@ -293,7 +294,7 @@ let authMode='login', currentUser=null;
   #signOutBtn.show{display:block}`;
   document.head.appendChild(css);
 
-  const ov=document.createElement('div');ov.id='authOverlay';
+  const ov=document.createElement('div');ov.id='authOverlay';ov.className='pending';
   ov.innerHTML=`<form id="authCard" novalidate>
     <img id="authLogo" src="/finvia-logo.svg" alt="Finvia">
     <h2 id="authTitle">Sign in</h2><p class="sub" id="authSub">Welcome back to Finvia.</p>
@@ -321,10 +322,10 @@ function setAuthMode(mode){
 function setAuthMsg(text,ok){const m=$('#authMsg');m.textContent=text||'';m.className=ok?'ok':''}
 function showAuth(msg){
   currentUser=null;$('#signOutBtn').classList.remove('show');
-  $('#authOverlay').classList.add('show');
+  $('#authOverlay').classList.remove('pending');$('#authOverlay').classList.add('show');
   if(msg)setAuthMsg(msg);
 }
-function hideAuth(){$('#authOverlay').classList.remove('show');$('#signOutBtn').classList.add('show')}
+function hideAuth(){$('#authOverlay').classList.remove('show','pending');$('#signOutBtn').classList.add('show')}
 
 $('#authSwitch').onclick=()=>setAuthMode(authMode==='login'?'register':'login');
 $('#authCard').onsubmit=async e=>{
