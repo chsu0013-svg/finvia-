@@ -1,0 +1,140 @@
+FINVIA - SYSTEM DESIGN AND LOGIC OVERVIEW
+==========================================
+
+1. PURPOSE
+Finvia is a web app (installable as a phone app) that helps small businesses
+(SMEs) see their cash position. A user signs in, uploads a bank statement,
+and Finvia shows a 30-day cash forecast, spending categories, possible tax
+signals, and a consent-based financing referral. Finvia does not approve loans.
+
+2. SYSTEM ARCHITECTURE
+
+  Browser (frontend: HTML, CSS, JavaScript)
+        |
+        |  HTTPS requests to /api/...
+        v
+  FastAPI backend (Python)  ------>  Supabase Auth (sign up / sign in)
+        |
+        |  reads and analyses uploaded files (pandas)
+        v
+  In-memory workspace per user  +  uploads/ folder on the container
+
+  Hosting: one Docker container on AWS (Amazon ECS, Express Mode).
+  Deployment: GitHub Actions runs the tests, builds the image, deploys to AWS.
+
+3. COMPONENTS
+
+3.1 Frontend (frontend/)
+  - index.html, app.css, app.js: the single-page app (dashboard, cash flow
+    forecast, documents, tax signals, upload sheet, referral).
+  - app.js also builds the sign-in / create-account screen, shows the opening
+    animation after sign in, and sends all requests to the backend.
+  - manifest.webmanifest and service-worker.js make it installable as an app.
+  - The frontend is served by the backend from the same server, so no
+    cross-origin setup is needed.
+
+3.2 Backend (backend/)
+  - main.py: creates the FastAPI app, security headers, API endpoints, upload
+    handling, per-user workspaces, and serves the frontend.
+  - auth.py: register, login, logout, and the check that a user is signed in.
+  - supabase_client.py: creates the connection to Supabase using environment
+    variables.
+  - analysis.py: reads the statement and builds the dashboard and tax report.
+  - tests/: automated tests (pytest).
+
+3.3 External services
+  - Supabase Auth: stores user accounts and checks passwords.
+  - AWS ECS: runs the container. GitHub Actions: tests and deploys.
+
+4. API ENDPOINTS
+  GET  /health, /api/health   Server status (no login needed)
+  POST /api/auth/register     Create an account
+  POST /api/auth/login        Sign in
+  GET  /api/auth/me           Who is signed in
+  POST /api/auth/logout       Sign out
+  GET  /api/dashboard         Cash forecast data (login required)
+  POST /api/upload            Upload and analyse a statement (login required)
+  GET  /api/tax-report        Tax signal report (login required)
+  POST /api/referral          Financing referral request, needs consent
+                              (login required)
+
+5. MAIN LOGIC FLOWS
+
+5.1 Sign in / register
+  1. The page opens and asks the backend GET /api/auth/me.
+  2. If the user is not signed in, the sign-in screen is shown.
+  3. The user enters email and password. The backend sends them to Supabase.
+  4. If Supabase accepts them, the backend stores the access token in an
+     HttpOnly cookie (JavaScript cannot read it).
+  5. The opening animation plays, then the dashboard loads.
+  6. New users choose "Create an account". If email confirmation is on in
+     Supabase, they confirm by email before signing in.
+
+5.2 Checking login on every request
+  - Protected endpoints use the current_user check. It reads the cookie and
+    asks Supabase whether the token is valid.
+  - If it is missing or expired, the backend answers 401 and the frontend
+    shows the sign-in screen again.
+
+5.3 Upload and forecast
+  1. The user chooses a file (CSV, XLSX, XLS, PDF, PNG, JPG; maximum 10 MB).
+  2. The backend checks the file type and size, and saves the file with a
+     random name in uploads/. Oversized or wrong files are rejected.
+  3. analysis.py reads the transactions and works out the opening balance,
+     money in and money out, spending categories, and repeating payments.
+  4. It builds a 30-day projected balance, with a low and high range, and
+     summaries for 7, 14 and 30 days. It also finds the lowest balance and
+     the first day the balance goes below the cash buffer (RM 15,000).
+  5. It adds tax signals found in transaction descriptions (for example
+     equipment purchases and software subscriptions).
+  6. The result is stored in that user's workspace and sent to the frontend,
+     which draws the charts and lists.
+  7. If the file cannot be understood, the user gets a clear message instead
+     of an error.
+  Before any upload, the dashboard shows sample (demo) data.
+
+5.4 Separate data for each user
+  - Each signed-in user has their own workspace, identified by their Supabase
+    user id. One user never sees another user's data.
+  - Workspaces are capped at 500 users in memory.
+
+5.5 Financing referral
+  - The user must tick consent first. The backend refuses without consent.
+  - Currently it returns a confirmation message only. Finvia does not approve
+    loans; a participating bank makes the final decision.
+
+6. SECURITY
+  - Passwords are handled by Supabase, never stored by Finvia.
+  - Login token is kept in an HttpOnly cookie; the cookie is Secure on HTTPS.
+  - API keys are environment variables, not stored in GitHub.
+  - Only the frontend/ folder is public. Source code, uploads and the
+    Dockerfile are never served (checked by tests).
+  - Security headers (Content-Security-Policy, X-Frame-Options, nosniff) are
+    added to every response, and API responses are not cached.
+  - File uploads are limited by type and size.
+
+7. TESTING AND DEPLOYMENT
+  - pytest tests check parsing of different statement formats, the forecast,
+    upload limits, hidden source files, login rules, and per-user data.
+  - GitHub Actions workflow "Test, build and deploy Finvia (ECS Express Mode)"
+    runs the tests first. Only if they pass, it builds the Docker image and
+    deploys to AWS.
+  - Environment variables needed on AWS: SUPABASE_URL and SUPABASE_KEY
+    (the public anon key).
+
+8. TECHNOLOGIES
+  Frontend: HTML, CSS, JavaScript, SVG charts, Progressive Web App
+  Backend: Python, FastAPI, pandas, Uvicorn
+  Login: Supabase Auth
+  Testing: pytest
+  Deployment: Docker, GitHub Actions, Amazon ECS (Express Mode)
+
+9. LIMITATIONS AND FUTURE WORK
+  - User data is kept in memory, so it is lost when the server restarts.
+    Next step: store workspaces in a Supabase database table.
+  - Uploaded files are stored on the container disk, which is temporary.
+    Next step: use cloud file storage.
+  - The forecast and tax signals are estimates for guidance, not financial
+    or tax advice.
+  - The referral request is not yet saved or sent to a bank.
+  - Login lasts about one hour (Supabase default token life).
