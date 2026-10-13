@@ -391,5 +391,39 @@ $('#uploadSubmit').onclick=async()=>{
 
 $('#reportBtn').onclick=async()=>{openSheet('reportSheet');$('#reportBody').innerHTML='<p class="muted">Loading report…</p>';try{const r=await fetch('/api/tax-report');if(r.status===401){closeSheet('reportSheet');showAuth('Your session expired. Please sign in again.');return}const j=await r.json();$('#reportBody').innerHTML=(j.items||[]).map(x=>`<div class="report-row"><b>${esc(x.title)}</b><small>${esc(x.text||x.description||'Review supporting documents and eligibility.')}</small></div>`).join('')||'<div class="report-row"><b>No report items yet</b><small>Upload invoices or receipts to create signals.</small></div>'}catch(e){$('#reportBody').innerHTML='<div class="report-row"><b>Report unavailable</b><small>Please try again.</small></div>'}};
 $('#referralBtn').onclick=async()=>{if(!$('#consent').checked){toast('Please give consent before requesting a referral');return}$('#referralBtn').disabled=true;try{const r=await fetch('/api/referral',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({consent:true})});if(r.status===401){showAuth('Your session expired. Please sign in again.');return}const j=await r.json();if(!r.ok)throw new Error(j.detail||'Request failed');toast('Referral request submitted');$('#referralBtn').textContent='Referral submitted'}catch(e){toast(e.message)}finally{$('#referralBtn').disabled=false}};
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e});$('#installBtn').onclick=async()=>{if(deferredInstall){deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null}else toast('Use your browser menu to add Finvia to your home screen')};$('#aboutBtn').onclick=()=>toast('Finvia prototype · SME cash, tax signals and financing referral');
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e});
+
+/* ---- Install / Add to Home Screen ---- */
+const UA=navigator.userAgent,
+  isIPad=/ipad/i.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),
+  isIOS=/iphone|ipod/i.test(UA)||isIPad,
+  isIOSSafari=isIOS&&!/crios|fxios|edgios|opios|gsa\/|instagram|fban|fbav|line\//i.test(UA),
+  isStandalone=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+function showIOSInstall(){
+  const arrow=$('#iosArrow'),
+    ver=+((UA.match(/Version\/(\d+)/)||[])[1]||0),
+    newSafari=isIOSSafari&&!isIPad&&ver>=26;   // iOS 26+: Share lives inside the bottom-right "..." menu
+  const SHARE='<svg viewBox="0 0 24 24"><path d="M12 15V3.5M8 7l4-4 4 4M7 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></svg>',
+    DOTS='<svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg>';
+  arrow.classList.toggle('up',isIPad);
+  arrow.classList.toggle('right',newSafari);
+  arrow.classList.toggle('hide',!isIOSSafari);   // only point at the toolbar when we know it's Safari
+  $('#iosNotSafari').hidden=isIOSSafari;
+  $('#iosArrowLabel').textContent=newSafari?'Tap \u22ef':'Share';
+  $('#iosStep1Title').textContent=newSafari?'Tap \u22ef, then Share':'Tap the Share button';
+  $('#iosStep1Icon').innerHTML=newSafari?DOTS:SHARE;
+  $('#iosShareHint').textContent=isIPad?'At the top-right of Safari, next to the address bar.'
+    :newSafari?'The \u22ef button is at the bottom-right of Safari. Choose Share from the menu.'
+    :'At the bottom of Safari, in the middle of the toolbar.';
+  openSheet('iosInstallSheet');
+}
+if(isStandalone()){const b=$('#installBtn b');if(b)b.textContent='Installed \u2713'}
+$('#installBtn').onclick=async()=>{
+  if(isStandalone()){toast('Finvia is already on your home screen');return}
+  if(deferredInstall){deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;return}   // Android / desktop Chrome: real one-tap install
+  if(isIOS){showIOSInstall();return}                                                                              // iPhone / iPad: show the how-to sheet
+  toast('Use your browser menu to add Finvia to your home screen');
+};
+
+$('#aboutBtn').onclick=()=>toast('Finvia prototype · SME cash, tax signals and financing referral');
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/service-worker.js').catch(()=>{});boot();
