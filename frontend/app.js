@@ -293,8 +293,7 @@ let authMode='login', currentUser=null;
   #authSwitch{display:block;width:100%;margin-top:12px;background:none;border:0;color:#2124a0;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
   #authMsg{min-height:20px;margin-top:12px;font-size:14px;color:#b91c1c}
   #authMsg.ok{color:#15803d}
-  #signOutBtn{position:fixed;top:10px;right:10px;z-index:900;display:none;padding:7px 12px;border:1px solid #cbd5e1;border-radius:999px;background:rgba(255,255,255,.92);color:#0f172a;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-  #signOutBtn.show{display:block}`;
+  #signOutBtn span{color:#b91c1c}`;
   document.head.appendChild(css);
 
   const ov=document.createElement('div');ov.id='authOverlay';ov.className='pending';
@@ -308,8 +307,7 @@ let authMode='login', currentUser=null;
     <div id="authMsg" role="status"></div></form>`;
   document.body.appendChild(ov);
 
-  const so=document.createElement('button');so.id='signOutBtn';so.type='button';so.textContent='Sign out';
-  document.body.appendChild(so);
+
 })();
 
 function setAuthMode(mode){
