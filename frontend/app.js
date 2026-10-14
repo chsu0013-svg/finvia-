@@ -351,7 +351,7 @@ $('#authCard').onsubmit=async e=>{
 };
 $('#signOutBtn').onclick=async()=>{
   try{await fetch('/api/auth/logout',{method:'POST'})}catch(_){}
-  data=null;showAuth();setAuthMode('login');
+  data=null;go('home');showAuth();setAuthMode('login');
 };
 async function boot(){
   // Ask the server in the background while the opening page plays.
