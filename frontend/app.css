@@ -222,8 +222,8 @@ html.lock{overflow:hidden}
 html{background:#dfeeff;min-height:100%;height:-webkit-fill-available}
 body{min-height:100vh;min-height:-webkit-fill-available;min-height:100dvh}
 .app{min-height:100dvh;padding-top:env(safe-area-inset-top)}
-/* dark band behind the status bar so white clock/battery stay readable */
-body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#2124a0;z-index:100;pointer-events:none}
+/* soft fade behind the status bar so the white clock/battery stay readable (no hard edge) */
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 10px);background:linear-gradient(180deg,rgba(33,36,160,.5),rgba(33,36,160,0));z-index:100;pointer-events:none}
 .bottom-nav{bottom:max(14px,calc(env(safe-area-inset-bottom) + 4px))}
 .fab{bottom:calc(max(14px,calc(env(safe-area-inset-bottom) + 4px)) + 82px)}
 .toast{bottom:calc(env(safe-area-inset-bottom) + 150px)}
