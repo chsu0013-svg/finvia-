@@ -7,7 +7,7 @@ let introTemplate=null;
 function playIntro(){
   return new Promise(function(resolve){
     if(!introTemplate){resolve();return}
-    try{sessionStorage.setItem('finviaIntro','1')}catch(e){}
+    try{localStorage.setItem('finviaIntro','1')}catch(e){}
     if(matchMedia('(prefers-reduced-motion:reduce)').matches){resolve();return}
     var root=document.documentElement,intro=introTemplate.cloneNode(true);
     document.body.prepend(intro);
@@ -356,7 +356,7 @@ $('#signOutBtn').onclick=async()=>{
 async function boot(){
   // Ask the server in the background while the opening page plays.
   const check=fetch('/api/auth/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
-  let seen=false;try{seen=!!sessionStorage.getItem('finviaIntro')}catch(_){}
+  let seen=false;try{seen=!!localStorage.getItem('finviaIntro')}catch(_){}
   if(!seen)await playIntro();
   const j=await check;
   if(j){currentUser=j.user;hideAuth();await load();return}
