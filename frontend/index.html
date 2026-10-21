@@ -27,7 +27,7 @@
     <div class="in-bar"><i></i></div>
     <button class="in-skip" type="button" id="skip" aria-label="Skip intro">Skip</button>
   </div>
-  <script>try{if(localStorage.getItem('finviaIntro')==='1')document.getElementById('intro').remove()}catch(e){}</script>
+    <script>try{if(sessionStorage.getItem('finviaIntro')==='1')document.getElementById('intro').remove()}catch(e){}</script>
   <div id="app" class="app">
     <header class="app-header">
       <div class="brand"><img src="/icon-512.png" alt="Finvia"><div><strong>Finvia</strong><span>SME Finance</span></div></div>
