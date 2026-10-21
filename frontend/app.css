@@ -217,3 +217,13 @@ html.lock{overflow:hidden}
 /* Closed sheets must be fully hidden */
 .sheet:not(.open){transform:translate3d(-50%,calc(100% + 140px),0);visibility:hidden;pointer-events:none;transition:transform .3s ease,visibility 0s linear .3s}
 .sheet.open{visibility:visible}
+
+/* ---- Full-screen iOS PWA (edge to edge) ---- */
+html{background:#dfeeff;min-height:100%;height:-webkit-fill-available}
+body{min-height:100vh;min-height:-webkit-fill-available;min-height:100dvh}
+.app{min-height:100dvh;padding-top:env(safe-area-inset-top)}
+/* dark band behind the status bar so white clock/battery stay readable */
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#2124a0;z-index:100;pointer-events:none}
+.bottom-nav{bottom:max(14px,calc(env(safe-area-inset-bottom) + 4px))}
+.fab{bottom:calc(max(14px,calc(env(safe-area-inset-bottom) + 4px)) + 82px)}
+.toast{bottom:calc(env(safe-area-inset-bottom) + 150px)}
