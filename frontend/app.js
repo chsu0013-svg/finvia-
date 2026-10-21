@@ -7,7 +7,7 @@ let introTemplate=null;
 function playIntro(){
   return new Promise(function(resolve){
     if(!introTemplate){resolve();return}
-    try{localStorage.setItem('finviaIntro','1')}catch(e){}
+    try{sessionStorage.setItem('finviaIntro','1')}catch(e){}
     if(matchMedia('(prefers-reduced-motion:reduce)').matches){resolve();return}
     var root=document.documentElement,intro=introTemplate.cloneNode(true);
     document.body.prepend(intro);
