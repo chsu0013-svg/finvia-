@@ -277,8 +277,9 @@ let authMode='login', currentUser=null;
 (function(){
   const css=document.createElement('style');
   css.textContent=`
-  #authOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#e6efff 0%,#f7f9ff 55%,#eceeff 100%);overflow-y:auto}
+  #authOverlay{position:absolute;top:0;left:0;right:0;min-height:100vh;min-height:100dvh;z-index:9999;display:none;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 20px 20px;background:linear-gradient(160deg,#e6efff 0%,#f7f9ff 55%,#eceeff 100%)}
   #authOverlay.show,#authOverlay.pending{display:flex}
+  body:has(#authOverlay.show) #app{display:none!important}
   #authOverlay.pending #authCard{visibility:hidden}
   #intro{z-index:10000!important}
   #authCard{width:100%;max-width:380px;background:#fff;color:#0f172a;border-radius:22px;padding:26px 22px;box-shadow:0 24px 60px rgba(33,36,160,.18);font-family:inherit}
