@@ -227,3 +227,14 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .bottom-nav{bottom:max(14px,calc(env(safe-area-inset-bottom) + 4px))}
 .fab{bottom:calc(max(14px,calc(env(safe-area-inset-bottom) + 4px)) + 82px)}
 .toast{bottom:calc(env(safe-area-inset-bottom) + 150px)}
+
+/* Compact bottom nav */
+.bottom-nav{height:62px;border-radius:22px;padding:0 8px;align-items:center}
+.nav-item{min-height:50px;padding:5px 4px;gap:2px;border-radius:16px}
+.nav-item small{font-size:.62rem}
+.nav-icon,.nav-icon svg{width:22px;height:22px}
+.bottom-nav .fab{position:static;transform:none;width:44px;height:44px;margin:0;justify-self:center;align-self:center;border-radius:14px;border:0;box-shadow:0 6px 14px rgba(47,123,255,.35)}
+.bottom-nav .fab:active{transform:scale(.94)}
+.bottom-nav .fab span{font-size:1.9rem;font-weight:300}
+.app{padding-bottom:92px}
+.toast{bottom:90px}
