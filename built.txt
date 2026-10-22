@@ -1,0 +1,24 @@
+BUILT.TXT - What I built, step by step
+
+Step 1: Set up the project
+- Created the FastAPI backend (main.py) and the frontend folder.
+- Added requirements.txt and .gitignore.
+
+Step 2: Login with Supabase
+- Added auth.py and supabase_client.py.
+- Users can register, sign in and sign out. Token is stored in an HttpOnly cookie.
+
+Step 3: Upload and analysis
+- Added file upload to main.py and analysis.py to read statements.
+- Builds the 30-day forecast, spending categories and tax signals.
+
+Step 4: Frontend
+- Built index.html, app.css, app.js (dashboard, forecast, upload, referral).
+- Added manifest.webmanifest and service-worker.js so it can be installed as an app.
+
+Step 5: Tests
+- Added test_analysis.py and test_api.py using pytest.
+
+Step 6: Deployment
+- Added Dockerfile, GitHub Actions workflow and aws/setup.sh.
+- Deploys to AWS ECS Express Mode. Notes are in docs/AWS-ECS-EXPRESS.md.
