@@ -152,3 +152,4 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
   - Build the frontend dashboard
   - Add tests
   - Deploy with Docker, GitHub Actions and AWS
+  - Add confirmation emails (Brevo SMTP through Supabase)
