@@ -14,6 +14,8 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
         |  HTTPS requests to /api/...
         v
   FastAPI backend (Python)  ------>  Supabase Auth (sign up / sign in)
+                                     Supabase sends confirmation emails
+                                     through Brevo (SMTP)
         |
         |  reads and analyses uploaded files (pandas)
         v
@@ -45,6 +47,8 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
 3.3 External services
   - Supabase Auth: stores user accounts and checks passwords.
   - AWS ECS: runs the container. GitHub Actions: tests and deploys.
+  - Brevo: sends the sign-up confirmation emails (set up as Supabase's
+    custom SMTP provider).
 
 4. API ENDPOINTS
   GET  /health, /api/health   Server status (no login needed)
@@ -67,8 +71,8 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
   4. If Supabase accepts them, the backend stores the access token in an
      HttpOnly cookie (JavaScript cannot read it).
   5. The opening animation plays, then the dashboard loads.
-  6. New users choose "Create an account". If email confirmation is on in
-     Supabase, they confirm by email before signing in.
+  6. New users choose "Create an account". Supabase sends a confirmation
+     email through Brevo. The user confirms by email before signing in.
 
 5.2 Checking login on every request
   - Protected endpoints use the current_user check. It reads the cookie and
@@ -121,11 +125,13 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
     deploys to AWS.
   - Environment variables needed on AWS: SUPABASE_URL and SUPABASE_KEY
     (the public anon key).
+  - Brevo SMTP credentials are configured in the Supabase dashboard, not in
+    AWS.
 
 8. TECHNOLOGIES
   Frontend: HTML, CSS, JavaScript, SVG charts, Progressive Web App
   Backend: Python, FastAPI, pandas, Uvicorn
-  Login: Supabase Auth
+  Login: Supabase Auth (confirmation emails sent via Brevo)
   Testing: pytest
   Deployment: Docker, GitHub Actions, Amazon ECS (Express Mode)
 
@@ -138,3 +144,11 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
     or tax advice.
   - The referral request is not yet saved or sent to a bank.
   - Login lasts about one hour (Supabase default token life).
+
+10. BUILD STEPS
+  - Set up the project and FastAPI skeleton
+  - Add Supabase login
+  - Build upload and statement analysis
+  - Build the frontend dashboard
+  - Add tests
+  - Deploy with Docker, GitHub Actions and AWS
