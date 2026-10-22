@@ -44,7 +44,7 @@ See [docs/AWS-ECS-EXPRESS.md](docs/AWS-ECS-EXPRESS.md).
 
 ## Upload format
 
-CSV/XLSX/XLS with a date column and either one amount column (negative = money out, or a `Type` column of Debit/Credit) or separate `Debit`/`Credit` (`Money Out`/`Money In`) columns; optional description and balance. Comma, semicolon or tab separated; title lines above the table, `RM 1,200.00`, `(300.00)` negatives, `dd/mm/yyyy` or `yyyy-mm-dd` dates, UTF-8 or Big5 files and Traditional Chinese headers (日期, 摘要, 支出, 存入, 餘額) are all handled, for example for Taiwan or Hong Kong bank statements. PDF/JPG/PNG are stored but not analysed yet. Max 10 MB.
+CSV/XLSX/XLS with a date column and either one amount column (negative = money out, or a `Type` column of Debit/Credit) or separate `Debit`/`Credit` (`Money Out`/`Money In`) columns; optional description and balance. Comma, semicolon or tab separated; title lines above the table, `RM 1,200.00`, `(300.00)` negatives and `dd/mm/yyyy` or `yyyy-mm-dd` dates are all handled. PDF/JPG/PNG are stored but not analysed yet. Max 10 MB.
 
 ## How the forecast works
 
