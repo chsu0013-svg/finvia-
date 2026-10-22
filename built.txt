@@ -22,3 +22,9 @@ Step 5: Tests
 Step 6: Deployment
 - Added Dockerfile, GitHub Actions workflow and aws/setup.sh.
 - Deploys to AWS ECS Express Mode. Notes are in docs/AWS-ECS-EXPRESS.md.
+
+Step 7: Confirmation emails
+- Connected Brevo as the SMTP provider in Supabase so sign-up confirmation
+  emails are sent reliably.
+- Updated plan.txt to include Brevo (plan change: email sending was not in
+  the original plan).
