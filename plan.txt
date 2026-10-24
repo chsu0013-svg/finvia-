@@ -22,7 +22,10 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
   In-memory workspace per user  +  uploads/ folder on the container
 
   Hosting: one Docker container on AWS (Amazon ECS, Express Mode).
-  Deployment: GitHub Actions runs the tests, builds the image, deploys to AWS.
+    Deployment: GitHub Actions runs the tests and builds the image. Deployment
+  to AWS is manual (git pull, docker build, docker push to ECR, then Update
+  service in ECS) because the organisation's AWS policy blocks automatic
+  login from GitHub.
 
 3. COMPONENTS
 
@@ -46,7 +49,7 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
 
 3.3 External services
   - Supabase Auth: stores user accounts and checks passwords.
-  - AWS ECS: runs the container. GitHub Actions: tests and deploys.
+  - AWS ECS: runs the container. GitHub Actions: tests and builds (deployment to AWS is manual).
   - Brevo: sends the sign-up confirmation emails (set up as Supabase's
     custom SMTP provider).
 
@@ -121,8 +124,9 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
   - pytest tests check parsing of different statement formats, the forecast,
     upload limits, hidden source files, login rules, and per-user data.
   - GitHub Actions workflow "Test, build and deploy Finvia (ECS Express Mode)"
-    runs the tests first. Only if they pass, it builds the Docker image and
-    deploys to AWS.
+    runs the tests first. Only if they pass, it builds the Docker image.
+    The deploy job is currently disabled (if: false), so each release is
+    deployed manually: git pull, docker build, docker push, Update service.
   - Environment variables needed on AWS: SUPABASE_URL and SUPABASE_KEY
     (the public anon key).
   - Brevo SMTP credentials are configured in the Supabase dashboard, not in
@@ -133,7 +137,7 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
   Backend: Python, FastAPI, pandas, Uvicorn
   Login: Supabase Auth (confirmation emails sent via Brevo)
   Testing: pytest
-  Deployment: Docker, GitHub Actions, Amazon ECS (Express Mode)
+  Deployment: Docker, Amazon ECS (Express Mode); GitHub Actions for tests
 
 9. LIMITATIONS AND FUTURE WORK
   - User data is kept in memory, so it is lost when the server restarts.
@@ -151,5 +155,5 @@ signals, and a consent-based financing referral. Finvia does not approve loans.
   - Build upload and statement analysis
   - Build the frontend dashboard
   - Add tests
-  - Deploy with Docker, GitHub Actions and AWS
+  - Deploy with Docker and AWS (GitHub Actions runs tests; deployment is manual)
   - Add confirmation emails (Brevo SMTP through Supabase)
