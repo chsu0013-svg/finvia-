@@ -8,6 +8,19 @@ Mobile-first SME finance web app / PWA prototype:
 
 **Sign-in:** Supabase Auth (email + password). Confirmation emails are sent through Brevo SMTP, configured in the Supabase dashboard.
 
+## Technologies used
+
+| Layer | Technology | Role |
+|---|---|---|
+| Backend | Python 3.12, FastAPI 0.116.1, Uvicorn 0.35.0 | REST API, static file serving, security headers, upload limits |
+| Data processing | pandas 2.3.2, openpyxl 3.1.5, xlrd 2.0.1 | Read CSV/XLSX/XLS statements, build forecast and tax signals |
+| Authentication | Supabase Auth (email + password); Brevo SMTP | Sign-up/sign-in, HttpOnly cookie session, confirmation emails |
+| Frontend | HTML, CSS, vanilla JavaScript, SVG charts | Mobile-first single-page interface |
+| PWA | Web app manifest, service worker | Installable app, cached app shell |
+| Testing / CI | pytest 8.4.1, httpx 0.28.1, GitHub Actions | Automated backend tests, container /health check |
+| Packaging / cloud | Docker, Amazon ECR, AWS ECS Express Mode | One image serving API and frontend on port 8080 |
+| Tools | Visual Studio Code, Git/GitHub, AI assistants (Claude) | Editing, version control, code and test generation |
+
 ## Brand colours
 
 `#dfeeff` background · `#a9cbf7` panel · `#2124a0` indigo · `#021b3a` navy · `#2f7bff` bright blue · `#f0ccff` pink accent · Poppins.
@@ -24,6 +37,12 @@ Dockerfile  single image: API + frontend on port 8080
 ```
 
 Only `frontend/` is served publicly; source code and uploads are never exposed.
+
+## Note for reviewers
+
+- **Easiest way to review:** open the live prototype at https://fi-fc120b2209524842b70c60b1814dc4ef.ecs.ap-southeast-2.on.aws (demo only; please do not upload real bank statements).
+- **Running the folder yourself:** the app needs two environment variables, `SUPABASE_URL` and `SUPABASE_KEY` (the Supabase project URL and public anon key). Without them sign-in will not work. Set them with `export` (see below) or in a `backend/.env` file.
+- The automated tests do not need Supabase (sign-in is simulated in the tests).
 
 ## Run locally
 
